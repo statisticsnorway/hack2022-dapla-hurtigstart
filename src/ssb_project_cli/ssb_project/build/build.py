@@ -81,8 +81,10 @@ def validate_and_fix_git_config(
     """
     try:
         valid_global_git_config = kvakk_git_tools.validate_git_config()
+        print(f"{valid_global_git_config=}")
     except FileExistsError:
         # If gitconfig does not exist the configuration is invalid
+        print("Got FileExistError when checking .gitconfig")
         valid_global_git_config = False
     valid_project_git_config = verify_local_config(
         template_repo_url,

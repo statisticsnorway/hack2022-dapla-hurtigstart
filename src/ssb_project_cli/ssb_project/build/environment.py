@@ -51,6 +51,17 @@ def _local_file_contains_remote_lines(
     return remote_content.issubset(local_content)
 
 
+def print_missing_remote_lines(local_file_path: str, remote_file_path: str) -> None:
+    """Prints lines in remote_file that are not in local_file."""
+    with open(local_file_path) as local_file:
+        local_lines = set(local_file.readlines())
+
+    with open(remote_file_path) as remote_file:
+        for line in remote_file:
+            if line not in local_lines:
+                print(line, end="")  # Beholder original linjeformat
+
+
 def verify_local_config(
     template_repo_url: str, checkout: str | None, cwd: str = ""
 ) -> bool:
@@ -69,6 +80,7 @@ def verify_local_config(
         # If a path is used we should add a slash
         cwd = cwd + "/"
 
+    result = True
     # create a temporary directory
     with TempTemplateRepo(template_repo_url, checkout) as temp_repo:
         # compare the contents of the local files with the files in the repository
@@ -82,8 +94,12 @@ def verify_local_config(
                 return False
             # compare the contents of the local and remote files
             if not _local_file_contains_remote_lines(local_file_path, remote_file_path):
-                return False
-    return True
+                print(
+                    f"\n:x:\t{file_path} does not contain the required lines. Missing lines:"
+                )
+                print_missing_remote_lines(local_file_path, remote_file_path)
+                result = False
+    return result
 
 
 def reset_global_gitconfig() -> None:
